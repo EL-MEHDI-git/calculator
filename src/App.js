@@ -9,6 +9,7 @@ export const ACTIONS = {
   CLEAR: "clear",
   DELETE_DIGIT: "delete-digit",
   EVALUATE: "evaluate",
+  // DISPLAY_RECORDS: "records-operations"
 }
 
 function reducer(state, { type, payload }) {
@@ -60,7 +61,12 @@ function reducer(state, { type, payload }) {
         currentOperand: null,
       }
     case ACTIONS.CLEAR:
-      return {}
+      return {...state,
+        overwrite: true,
+        previousOperand: null,
+        operation: null,
+        currentOperand: null}
+      
     case ACTIONS.DELETE_DIGIT:
       if (state.overwrite) {
         return {
@@ -93,7 +99,13 @@ function reducer(state, { type, payload }) {
         previousOperand: null,
         operation: null,
         currentOperand: evaluate(state),
+        records: [
+          ...state.records,
+          `${state.previousOperand} ${state.operation} ${state.currentOperand} = ${evaluate(state)}`
+        ],
+        // state.records.push(`${state.previousOperand} ${state.operation} ${state.currentOperand} = ${evaluate(state)}`)
       }
+    // case ACTIONS.DISPLAY_RECORDS:
   }
 }
 
@@ -131,49 +143,61 @@ function formatOperand(operand) {
 }
 
 function App() {
-  const [{ currentOperand, previousOperand, operation }, dispatch] = useReducer(
+  const [{ currentOperand, previousOperand, operation, records}, dispatch] = useReducer(
     reducer,
-    {}
+    {records: []}
   )
 
   return (
-    <div className="calculator-grid">
-      <div className="output">
-        <div className="previous-operand">
-          {formatOperand(previousOperand)} {operation} {formatOperand(currentOperand)}
+    <div className="app-container">
+      <div className="calculator-grid">
+        <div className="output">
+          <div className="previous-operand">
+            {formatOperand(previousOperand)} {operation} {formatOperand(currentOperand)}
+            {/* {records.slice(-1)} */}
+          </div>
+          <div className="current-operand">{formatOperand(currentOperand)}</div>
         </div>
-        <div className="current-operand">{formatOperand(currentOperand)}</div>
+        <button
+          className="span-two"
+          onClick={() => dispatch({ type: ACTIONS.CLEAR })}
+        >
+          AC
+        </button>
+        <button onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}>
+          DEL
+        </button>
+        <OperationButton operation="÷" dispatch={dispatch} />
+        <DigitButton digit="1" dispatch={dispatch} />
+        <DigitButton digit="2" dispatch={dispatch} />
+        <DigitButton digit="3" dispatch={dispatch} />
+        <OperationButton operation="*" dispatch={dispatch} />
+        <DigitButton digit="4" dispatch={dispatch} />
+        <DigitButton digit="5" dispatch={dispatch} />
+        <DigitButton digit="6" dispatch={dispatch} />
+        <OperationButton operation="+" dispatch={dispatch} />
+        <DigitButton digit="7" dispatch={dispatch} />
+        <DigitButton digit="8" dispatch={dispatch} />
+        <DigitButton digit="9" dispatch={dispatch} />
+        <OperationButton operation="-" dispatch={dispatch} />
+        <DigitButton digit="." dispatch={dispatch} />
+        <DigitButton digit="0" dispatch={dispatch} />
+        <button
+          className="span-two"
+          onClick={() => dispatch({ type: ACTIONS.EVALUATE })}
+        >
+          =
+        </button>
       </div>
-      <button
-        className="span-two"
-        onClick={() => dispatch({ type: ACTIONS.CLEAR })}
-      >
-        AC
-      </button>
-      <button onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}>
-        DEL
-      </button>
-      <OperationButton operation="÷" dispatch={dispatch} />
-      <DigitButton digit="1" dispatch={dispatch} />
-      <DigitButton digit="2" dispatch={dispatch} />
-      <DigitButton digit="3" dispatch={dispatch} />
-      <OperationButton operation="*" dispatch={dispatch} />
-      <DigitButton digit="4" dispatch={dispatch} />
-      <DigitButton digit="5" dispatch={dispatch} />
-      <DigitButton digit="6" dispatch={dispatch} />
-      <OperationButton operation="+" dispatch={dispatch} />
-      <DigitButton digit="7" dispatch={dispatch} />
-      <DigitButton digit="8" dispatch={dispatch} />
-      <DigitButton digit="9" dispatch={dispatch} />
-      <OperationButton operation="-" dispatch={dispatch} />
-      <DigitButton digit="." dispatch={dispatch} />
-      <DigitButton digit="0" dispatch={dispatch} />
-      <button
-        className="span-two"
-        onClick={() => dispatch({ type: ACTIONS.EVALUATE })}
-      >
-        =
-      </button>
+      <div className="records"> Operations Records :
+        {/* <button onClick={() => dispatch({type:ACTIONS.DISPLAY_RECORDS})}>Display Historical operations</button> */}
+        <ul className="record-list">
+          {records.map((record, index) => (
+            <li key={index} className="record-item">{record}</li>
+          ))}
+        </ul>
+      </div>
+      
     </div>
   )
 }
